@@ -322,32 +322,3 @@ Open [http://localhost:3000](http://localhost:3000).
 npm run build
 npm start
 ```
-
-### 6. Deploy
-
-- **App**: Vercel (recommended — zero config for Next.js App Router) or any
-  Node host.
-- **Database** (if you've swapped to the Prisma store): Neon or Supabase
-  Postgres — set `DATABASE_URL` and run `npx prisma migrate deploy`.
-- **File storage** (if persisting uploads beyond the verification session):
-  Supabase Storage or any S3-compatible bucket — set `STORAGE_URL` /
-  `STORAGE_KEY` and swap the file-handling in the upload branch of
-  `app/api/verify/route.ts`.
-- Set the same environment variables from `.env.example` in your host's
-  dashboard.
-
-### 7. Demo flow for a live walkthrough (~2–3 min)
-
-1. Open `/verify`.
-2. Click the **"Fake government announcement"** demo card, then **Verify**.
-3. Watch the stage tracker run through OCR → claims → sources → contradictions
-   → graph → report.
-4. On the report: point out the Evidence Score dial, then scroll to
-   Supporting vs. Contradicting Evidence — RBI and Reuters contradicting a
-   low-authority blog post.
-5. Open the Evidence Graph, click the RBI source node, show the exact
-   snippet and credibility behind it.
-6. Scroll to the Evidence Score Breakdown — show the formula and each
-   factor's contribution.
-7. Scroll to the Evidence Trail at the bottom — every pipeline stage,
-   inspectable.
