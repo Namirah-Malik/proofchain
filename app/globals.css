@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------
+   ProofChain design tokens.
+   Palette: deep navy dossier background, warm paper foreground, teal
+   as the single "verified" accent, with red/green/amber reserved
+   strictly for evidence-relation meaning (never decoration).
+--------------------------------------------------------------------- */
+:root {
+  --pc-navy-950: #0a1420;
+  --pc-navy-900: #0e1c2c;
+  --pc-navy-800: #142a3f;
+  --pc-navy-700: #1c3a56;
+  --pc-navy-600: #2a4f70;
+  --pc-paper: #f6f3ec;
+  --pc-paper-dim: #ece7da;
+  --pc-ink: #12202f;
+  --pc-ink-soft: #4a5c6d;
+  --pc-teal: #1f8a82;
+  --pc-teal-bright: #2fb3a8;
+  --pc-red: #b5433a;
+  --pc-red-soft: #f4e3e0;
+  --pc-green: #2f7a52;
+  --pc-green-soft: #e2eee2;
+  --pc-amber: #a97328;
+  --pc-amber-soft: #f3e7d2;
+  --pc-violet: #7c5cd6;
+  --pc-violet-bright: #9b7fe8;
+  --pc-violet-soft: #efe9fb;
+  --pc-gold: #d9a441;
+  --pc-gold-bright: #f0c869;
+  --pc-gold-soft: #faf1dd;
+  --pc-hairline: rgba(18, 32, 47, 0.12);
+  --pc-hairline-dark: rgba(246, 243, 236, 0.14);
+
+  --background: var(--pc-paper);
+  --foreground: var(--pc-ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-navy-950: var(--pc-navy-950);
+  --color-navy-900: var(--pc-navy-900);
+  --color-navy-800: var(--pc-navy-800);
+  --color-navy-700: var(--pc-navy-700);
+  --color-navy-600: var(--pc-navy-600);
+  --color-paper: var(--pc-paper);
+  --color-paper-dim: var(--pc-paper-dim);
+  --color-ink: var(--pc-ink);
+  --color-ink-soft: var(--pc-ink-soft);
+  --color-teal: var(--pc-teal);
+  --color-teal-bright: var(--pc-teal-bright);
+  --color-evrred: var(--pc-red);
+  --color-evrred-soft: var(--pc-red-soft);
+  --color-evrgreen: var(--pc-green);
+  --color-evrgreen-soft: var(--pc-green-soft);
+  --color-evramber: var(--pc-amber);
+  --color-evramber-soft: var(--pc-amber-soft);
+  --color-violet: var(--pc-violet);
+  --color-violet-bright: var(--pc-violet-bright);
+  --color-violet-soft: var(--pc-violet-soft);
+  --color-gold: var(--pc-gold);
+  --color-gold-bright: var(--pc-gold-bright);
+  --color-gold-soft: var(--pc-gold-soft);
+  --font-display: var(--font-newsreader);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
+}
+
+* {
+  border-color: var(--pc-hairline);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-newsreader), Georgia, serif;
+}
+
+.font-mono-data {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Hairline dossier rules used throughout instead of drop shadows */
+.rule {
+  border-top: 1px solid var(--pc-hairline);
+}
+
+/* Reduced motion respected globally */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+::selection {
+  background: var(--pc-teal-bright);
+  color: var(--pc-navy-950);
+}
+
+/* ---------------------------------------------------------------------
+   Shared motion primitives used across the site (hero blobs, glow pulses,
+   underline draw-ins). Framer Motion handles scroll reveals / hovers;
+   these CSS keyframes cover ambient, always-on motion that shouldn't be
+   re-triggered by React state.
+--------------------------------------------------------------------- */
+@keyframes pc-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-2%, 3%) scale(1.04); }
+}
+@keyframes pc-float-slow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(3%, -2%) scale(1.05); }
+}
+.animate-float {
+  animation: pc-float 14s ease-in-out infinite;
+}
+.animate-float-slow {
+  animation: pc-float-slow 19s ease-in-out infinite;
+}
+
+@keyframes pc-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--pc-paper-dim) 25%, #ffffff 50%, var(--pc-paper-dim) 75%);
+  background-size: 200% 100%;
+  animation: pc-shimmer 1.6s ease-in-out infinite;
+}

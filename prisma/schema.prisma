@@ -1,0 +1,139 @@
+// Reference schema for a production deployment on PostgreSQL.
+//
+// This hackathon build uses a JSON-file store (lib/store/index.ts) with the
+// exact same record shape so the whole app runs with zero infrastructure.
+// Swapping to this schema means: `prisma migrate dev`, then reimplement the
+// ~6 functions in lib/store/index.ts against `prisma.verification.*` --
+// every other module (pipeline, API routes, pages) is unaffected because
+// they only depend on that store interface.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String?        @unique
+  createdAt     DateTime       @default(now())
+  verifications Verification[]
+}
+
+model Verification {
+  id             String    @id @default(cuid())
+  userId         String?
+  user           User?     @relation(fields: [userId], references: [id])
+  inputType      String // text | image | document
+  originalInput  String    @db.Text
+  extractedText  String?   @db.Text
+  mainClaim      String?   @db.Text
+  state          String // VerificationState
+  evidenceScore  Int?
+  conclusion     String?   @db.Text
+  isDemo         Boolean   @default(false)
+  llmProvider    String
+  searchProvider String
+  ocrProvider    String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  claims          Claim[]
+  sources         Source[]
+  evidence        Evidence[]
+  provenanceCheck ProvenanceCheck?
+  integrityCheck  IntegrityCheck?
+  inputFile       InputFile?
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model InputFile {
+  id             String       @id @default(cuid())
+  verificationId String       @unique
+  verification   Verification @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+  fileName       String
+  mimeType       String
+  sizeBytes      Int
+  storageUrl     String? // set when using S3/Supabase Storage instead of ephemeral local disk
+  createdAt      DateTime     @default(now())
+}
+
+model Claim {
+  id             String       @id @default(cuid())
+  verificationId String
+  verification   Verification @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+  text           String       @db.Text
+  category       String // factual | temporal | quantitative | attribution | other
+  importance     String // high | medium | low
+  status         String // VerificationState
+  evidence       Evidence[]
+
+  @@index([verificationId])
+}
+
+model Source {
+  id                 String       @id @default(cuid())
+  verificationId     String
+  verification       Verification @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+  url                String
+  title              String
+  publisher          String
+  sourceType         String // government | news | academic | fact_check | corporate | unknown | demo
+  publishedAt        DateTime?
+  retrievedAt        DateTime     @default(now())
+  credibilityScore   Int
+  credibilityReasons String[]
+  isDemo             Boolean      @default(false)
+  evidence           Evidence[]
+
+  @@index([verificationId])
+}
+
+model Evidence {
+  id             String       @id @default(cuid())
+  verificationId String
+  verification   Verification @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+  claimId        String
+  claim          Claim        @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  sourceId       String
+  source         Source       @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  snippet        String       @db.Text
+  relation       String // supports | contradicts | inconclusive
+  strength       Int
+  directness     String // direct | indirect
+  reasonSelected String       @db.Text
+  verified       Boolean      @default(false)
+  retrievedAt    DateTime     @default(now())
+
+  @@index([verificationId])
+  @@index([claimId])
+  @@index([sourceId])
+}
+
+model ProvenanceCheck {
+  id             String       @id @default(cuid())
+  verificationId String       @unique
+  verification   Verification @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+  sha256         String
+  mimeType       String
+  sizeBytes      Int
+  exif           Json?
+  c2pa           String // available | not_available
+  signalsAvailable Boolean
+  notes          String[]
+}
+
+model IntegrityCheck {
+  id             String       @id @default(cuid())
+  verificationId String       @unique
+  verification   Verification @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+  status         String // clean | warning | no_signal | not_applicable
+  headline       String
+  signals        Json // Array<{ label, detail, severity }>
+  disclaimer     String       @db.Text
+}
